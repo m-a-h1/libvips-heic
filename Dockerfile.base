@@ -44,3 +44,6 @@ RUN git clone --branch=v8.16.0 --depth=1 https://github.com/libvips/libvips.git 
 
 ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig
 ENV LD_LIBRARY_PATH=/usr/local/lib
+
+RUN apt-get purge -y git && apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* /usr/local/bin/ninja /usr/local/bin/meson
