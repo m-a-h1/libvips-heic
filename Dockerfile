@@ -51,22 +51,16 @@ RUN git clone --branch=v8.16.0 --depth=1 https://github.com/libvips/libvips.git 
 ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig
 ENV LD_LIBRARY_PATH=/usr/local/lib
 
-# Remove unused build tools
-RUN apt-get purge -y git && apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/* /usr/local/bin/ninja /usr/local/bin/meson
-
 WORKDIR /app
 
 RUN pkg-config --cflags vips-cpp && pkg-config --libs vips-cpp
 
+# Ensure sharp builds against system libvips
+ENV npm_config_build_from_source=true
+ENV SHARP_IGNORE_GLOBAL_LIBVIPS=0
+
 COPY package.json package-lock.json ./
 RUN npm i --build-from-source
 
+# Copy app
 COPY . .
-
-# Remove source code
-RUN rm -rf ./src
-
-EXPOSE 3000
-
-ENTRYPOINT [ "npm", "run", "convert" ]

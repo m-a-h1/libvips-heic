@@ -1,5 +1,5 @@
 # Stage 1
-FROM debian:bookworm-slim
+FROM debian:bookworm-slim AS builder
 
 WORKDIR /build
 
@@ -22,6 +22,9 @@ RUN git clone --branch=1.6.1 --depth=1 https://github.com/mesonbuild/meson.git &
     chmod +x meson.pyz && \
     mv meson.pyz /usr/local/bin/meson
 
+# Stage 2
+FROM debian:bookworm-slim 
+
 # Install runtime dependencies
 RUN apt-get update && \
     apt-get install -y \
@@ -30,6 +33,9 @@ RUN apt-get update && \
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt install -y nodejs
 
+# Copy build tools from builder stage
+COPY --from=builder /usr/local/bin/ninja /usr/local/bin/ninja
+COPY --from=builder /usr/local/bin/meson /usr/local/bin/meson
 
 # Build libvips
 RUN git clone --branch=v8.16.0 --depth=1 https://github.com/libvips/libvips.git && \
@@ -44,3 +50,17 @@ RUN git clone --branch=v8.16.0 --depth=1 https://github.com/libvips/libvips.git 
 
 ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig
 ENV LD_LIBRARY_PATH=/usr/local/lib
+
+WORKDIR /app
+
+RUN pkg-config --cflags vips-cpp && pkg-config --libs vips-cpp
+
+# Ensure sharp builds against system libvips
+ENV npm_config_build_from_source=true
+ENV SHARP_IGNORE_GLOBAL_LIBVIPS=0
+
+COPY package.json package-lock.json ./
+RUN npm i --build-from-source
+
+# Copy app
+COPY . .
