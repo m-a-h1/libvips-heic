@@ -41,10 +41,6 @@ RUN git clone --branch=v8.18.0 --depth=1 https://github.com/libvips/libvips.git 
     cd ../.. && rm -rf libvips
 
 # Environment for sharp
-ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig
-ENV LD_LIBRARY_PATH=/usr/local/lib
-ENV CPLUS_INCLUDE_PATH=/usr/include/glib-2.0:/usr/lib/x86_64-linux-gnu/glib-2.0/include
-ENV C_INCLUDE_PATH=/usr/include/glib-2.0:/usr/lib/x86_64-linux-gnu/glib-2.0/include
 ENV npm_config_build_from_source=true
 ENV npm_config_sharp_use_global_libvips=true
 
